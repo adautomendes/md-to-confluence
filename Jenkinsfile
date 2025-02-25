@@ -52,6 +52,7 @@ pipeline {
                         //     pandoc --from=markdown --to=jira --output=${dir}/${fileName}.wiki ${readme}
                         // """, returnStdout: true).trim()
 
+                        //Tentar fazer a conversão do pandoc funcionar ou usar uma docker img com essa lib em node.
                         def stdOut = sh(script: """
                             markdown2confluence ${readme} > ${dir}/${fileName}.wiki
                         """, returnStdout: true).trim()
