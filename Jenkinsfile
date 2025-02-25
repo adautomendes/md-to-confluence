@@ -28,20 +28,27 @@ pipeline {
         stage('Convert MD to Confluence') {
             steps {
                 script {
-                    readmeFiles.each { readme -> 
-                        def fileContent = readFile(readme)
-                        def firstLine = fileContent.readLines()[0]
-                        println "First Line: ${firstLine}"
+                    readmeFiles.each { readme ->
+                        def dir = readme.lastIndexOf("/") >= 0 ? readme[0..readme.lastIndexOf("/") - 1] : ""
+                        def fileName = readme.split("/")[-1]
 
-                        // Use regex to extract the numeric ID
-                        def match = firstLine =~ /!PAGE-ID:\s*(\d+)/
+                        def stdOut = sh(script: """
+                            pandoc --from=markdown --to=jira --output=${dir}/${fileName}.wiki ${readme}
+                        """, returnStdout: true).trim()
 
-                        if (match) {
-                            def pageId = match[0][1] // Extract the captured group
-                            println "Extracted PAGE-ID: ${pageId}"
-                        } else {
-                            println "No PAGE-ID found in the first line!"
-                        }
+                        println "${stdOut}"
+                    }
+                }
+            }
+        }
+        stage('Post updated doc to Confluence') {
+            steps {
+                script {
+                    readmeFiles.each { readme ->
+                        def pageId = extractPageId(readme)
+                        println "Extracted PAGE-ID: ${pageId}"
+
+
                     }
                 }
             }
@@ -53,7 +60,22 @@ pipeline {
         }
         success {
             echo 'Pipeline concluded successfully!'
-            archiveArtifacts artifacts: '**/*.md', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/*.wiki', allowEmptyArchive: true
         }
     }
+}
+
+def extractPageId(readme) {
+    def fileContent = readFile(readme)
+    def firstLine = fileContent.readLines()[0]
+
+    // Use regex to extract the numeric ID
+    def match = firstLine =~ /<!-- PAGE-ID:\s*(\d+) -->/
+
+    if (match) {
+        return match[0][1]
+    }
+
+    println "No PAGE-ID found in the first line!"
+    return
 }
