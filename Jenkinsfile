@@ -48,8 +48,12 @@ pipeline {
                         def dir = readme.lastIndexOf("/") >= 0 ? readme[0..readme.lastIndexOf("/") - 1] : ""
                         def fileName = readme.split("/")[-1]
 
+                        // def stdOut = sh(script: """
+                        //     pandoc --from=markdown --to=jira --output=${dir}/${fileName}.wiki ${readme}
+                        // """, returnStdout: true).trim()
+
                         def stdOut = sh(script: """
-                            pandoc --from=markdown --to=jira --output=${dir}/${fileName}.wiki ${readme}
+                            markdown2confluence ${readme} > ${dir}/${fileName}.wiki
                         """, returnStdout: true).trim()
 
                         println "${stdOut}"
