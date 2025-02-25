@@ -5,14 +5,14 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git url: 'https://github.com/your-repo.git', branch: 'main'
+                git url: 'https://github.com/adautomendes/md-to-confluence.git', branch: 'main'
             }
         }
         stage('Find README.md files') {
             steps {
                 script {
                     def readmeFiles = sh(script: 'find . -type f -name README.md', returnStdout: true).trim()
-                    echo "README.md files found:\n${readmeFiles}"
+                    println "README.md files found:\n${readmeFiles}"
                 }
             }
         }
