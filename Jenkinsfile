@@ -73,12 +73,16 @@ pipeline {
                         def title = getConfluencePageResponse.title
                         def nextVersion = getConfluencePageResponse.version.number+1
 
-                        def fileContent = readFile(readme).readLines()
+                        def fileContent = readFile(readme).readLines().join("\\n")
+
+                        println "${fileContent}"
 
                         def confluencePayload = updateConfluencePayloadTemplate
                         confluencePayload = confluencePayload.replace("{{title}}", "${title}")
                         confluencePayload = confluencePayload.replace("{{content}}", "${fileContent}")
                         confluencePayload = confluencePayload.replace("{{versionNumber}}", "${nextVersion}")
+
+                        println "${confluencePayload}"
 
                         def putConfluencePageResponse
                         withCredentials([usernamePassword(credentialsId: 'Confluence_UserPass', usernameVariable: 'user', passwordVariable: 'password')]) {
