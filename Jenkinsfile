@@ -1,5 +1,21 @@
 def readmeFiles = []
 
+def updateConfluencePayloadTemplate = """
+{
+    "title": "{{title}}",
+    "type": "page",
+    "body": {
+        "wiki": {
+            "value": "{{content}}",
+            "representation": "wiki"
+        }
+    },
+    "version": {
+        "number": "{{versionNumber}}"
+    }
+}
+"""
+
 pipeline {
     agent any
 
@@ -46,9 +62,30 @@ pipeline {
                 script {
                     readmeFiles.each { readme ->
                         def pageId = extractPageId(readme)
-                        println "Extracted PAGE-ID: ${pageId}"
 
+                        def getConfluencePageResponse
+                        withCredentials([usernamePassword(credentialsId: 'Confluence_UserPass', usernameVariable: 'user', passwordVariable: 'password')]) {
+                            getConfluencePageResponse = readJSON(text: sh(script: """
+                                    curl -u ${user}:${password} -H 'Content-Type: application/json' http://confluence:8090/rest/api/content/${pageId}
+                                """, returnStdout: true).trim())
+                        }
 
+                        def title = getConfluencePageResponse.title
+                        def nextVersion = getConfluencePageResponse.version.number+1
+
+                        def fileContent = readFile(readme).readLines()
+
+                        def confluencePayload = updateConfluencePayloadTemplate
+                        confluencePayload = confluencePayload.replace("{{title}}", "${title}")
+                        confluencePayload = confluencePayload.replace("{{content}}", "${fileContent}")
+                        confluencePayload = confluencePayload.replace("{{versionNumber}}", "${nextVersion}")
+
+                        def putConfluencePageResponse
+                        withCredentials([usernamePassword(credentialsId: 'Confluence_UserPass', usernameVariable: 'user', passwordVariable: 'password')]) {
+                            putConfluencePageResponse = readJSON(text: sh(script: """
+                                    curl -u ${user}:${password} -X PUT -H 'Content-Type: application/json' --data '${confluencePayload}' http://confluence:8090/rest/api/content/${pageId}
+                                """, returnStdout: true).trim())
+                        }
                     }
                 }
             }
