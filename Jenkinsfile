@@ -71,7 +71,7 @@ pipeline {
                         def getConfluencePageResponse
                         withCredentials([usernamePassword(credentialsId: 'Confluence_UserPass', usernameVariable: 'user', passwordVariable: 'password')]) {
                             getConfluencePageResponse = readJSON(text: sh(script: """
-                                    curl -u ${user}:${password} -H 'Content-Type: application/json' http://confluence:8090/rest/api/content/${pageId}
+                                    curl -u ${user}:${password} -H 'Content-Type: application/json' http://localhost:8090/rest/api/content/${pageId}
                                 """, returnStdout: true).trim())
                         }
 
@@ -80,21 +80,19 @@ pipeline {
 
                         def fileContent = readFile(readme).readLines().join("\\n")
 
-                        println "${fileContent}"
-
                         def confluencePayload = updateConfluencePayloadTemplate
                         confluencePayload = confluencePayload.replace("{{title}}", "${title}")
                         confluencePayload = confluencePayload.replace("{{content}}", "${fileContent}")
                         confluencePayload = confluencePayload.replace("{{versionNumber}}", "${nextVersion}")
 
-                        println "${confluencePayload}"
-
                         def putConfluencePageResponse
                         withCredentials([usernamePassword(credentialsId: 'Confluence_UserPass', usernameVariable: 'user', passwordVariable: 'password')]) {
                             putConfluencePageResponse = readJSON(text: sh(script: """
-                                    curl -u ${user}:${password} -X PUT -H 'Content-Type: application/json' --data '${confluencePayload}' http://confluence:8090/rest/api/content/${pageId}
+                                    curl -u ${user}:${password} -X PUT -H 'Content-Type: application/json' --data '${confluencePayload}' http://localhost:8090/rest/api/content/${pageId}
                                 """, returnStdout: true).trim())
                         }
+
+                        println "${putConfluencePageResponse}"
                     }
                 }
             }
