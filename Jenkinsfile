@@ -49,7 +49,7 @@ pipeline {
                         def fileName = readme.split("/")[-1]
 
                         def stdOut = sh(script: """
-                            markdown2confluence ${readme} > ${readme}.wiki && sed -i '1d' ${readme}.wiki && cat ${readme}.wiki
+                            markdown2confluence ${readme} ${readme}.wiki && sed -i '1d' ${readme}.wiki && cat ${readme}.wiki
                         """, returnStdout: true).trim()
 
                         println "${stdOut}"
