@@ -1,3 +1,3 @@
-<%PAGE-ID=8617987%>
+PAGE-ID=8617987
   
 # An h1 header
