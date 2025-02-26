@@ -49,7 +49,7 @@ pipeline {
                         def fileName = readme.split("/")[-1]
 
                         def stdOut = sh(script: """
-                            markdown2confluence ${readme} > ${dir}/${fileName}.wiki && sed -i '1d' ${dir}/${fileName}.wiki && cat ${dir}/${fileName}.wiki
+                            markdown2confluence ${readme} > ${readme}.wiki && sed -i '1d' ${readme}.wiki && cat ${readme}.wiki
                         """, returnStdout: true).trim()
 
                         println "${stdOut}"
@@ -73,7 +73,7 @@ pipeline {
                         def title = getConfluencePageResponse.title
                         def nextVersion = getConfluencePageResponse.version.number+1
 
-                        def fileContent = readFile(readme).readLines().join("\\n")
+                        def fileContent = readFile("${readme}.wiki").readLines().join("\\n")
 
                         def confluencePayload = updateConfluencePayloadTemplate
                         confluencePayload = confluencePayload.replace("{{title}}", "${title}")
