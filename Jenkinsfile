@@ -49,7 +49,7 @@ pipeline {
                         def fileName = readme.split("/")[-1]
 
                         def stdOut = sh(script: """
-                            markdown2confluence ${readme} > ${dir}/${fileName}.wiki && cat ${dir}/${fileName}.wiki
+                            markdown2confluence ${readme} > ${dir}/${fileName}.wiki && sed -i '1d' ${dir}/${fileName}.wiki && cat ${dir}/${fileName}.wiki
                         """, returnStdout: true).trim()
 
                         println "${stdOut}"
@@ -109,7 +109,7 @@ def extractPageId(readme) {
     def firstLine = fileContent.readLines()[0]
 
     // Use regex to extract the numeric ID
-    def match = firstLine =~ /<%PAGE-ID:\s*(\d+)%>/
+    def match = firstLine =~ /PAGE-ID=\s*(\d+)/
 
     if (match) {
         return match[0][1]
